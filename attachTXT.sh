@@ -1,7 +1,7 @@
 #!/bin/sh
 ##############################################################################
 #
-# Copyright 2015 spf-tools team (see AUTHORS)
+# Copyright 2015
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,14 @@ done
 
 sed '1!G;h;$!d' | while read line
 do
-  subdomain="$(echo $line | cut -d^ -f1 | awk '{print $1}')."
-  output=$(echo $line | cut -d^ -f2)
-  echo $subdomain 1800 IN TXT $output
+  domain=$(echo $line | awk -F^ '{print $1}')
+  existing=$(dig $domain -t TXT +short | grep -v "v=spf1 " | sed ':a;N;$!ba;s/\n/^/g')
+  output=$line
+
+  if [ -n "${existing}" ]; then
+    output=${output}^${existing}
+  fi
+
+  echo $output
+
 done
