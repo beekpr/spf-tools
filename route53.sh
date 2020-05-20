@@ -74,7 +74,7 @@ test -r $SPFTRC && . $SPFTRC
 test -n "$1" -o -n "$HOSTED_ZONE_ID" || { echo "HOSTED_ZONE_ID not present! Exiting." >&2; exit 1; }
 HOSTED_ZONE_ID=${1:-"$HOSTED_ZONE_ID"}
 
-CHANGES=$(cat | jq -R -s -j --argjson TTL $ttl '.|split("\n")|map(split("^")|select(length>0)|{Action:"UPSERT",ResourceRecordSet:{Type:"TXT",TTL:$TTL,Name:.[0],ResourceRecords:[{Value:.[1]}]}})|{Changes:.}')
+CHANGES=$(cat | jq -R -s -j --argjson TTL $ttl '.|split("\n")|map(split("^")|select(length>0)|{Action:"UPSERT",ResourceRecordSet:{Type:"TXT",TTL:$TTL,Name:.[0],ResourceRecords:[.[1:][]|{Value:.}]}})|{Changes:.}')
 echo $CHANGES > $changesfile
 
 aws route53 change-resource-record-sets \
